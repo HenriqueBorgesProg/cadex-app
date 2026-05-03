@@ -10,5 +10,6 @@ export const AppDataSource = new DataSource({
     password: process.env.DB_PASSWORD || "cadex",
     database: process.env.DB_NAME || "cadex_network",
     entities: [Point],
+    migrations: ["src/shared/database/migrations/*.ts"],
     synchronize: false,
 });
