@@ -1,3 +1,4 @@
+import { AppError } from "../../../shared/errors/AppError";
 import { Point, PointType } from "../entity/Point";
 import { PointsRepository } from "../repository/points-repository";
 
@@ -18,15 +19,15 @@ export class PointsService {
     const { type, latitude, longitude } = data;
 
     if (type !== PointType.Client && type !== PointType.Pole) {
-      throw new Error("Invalid point type");
+      throw new AppError("Invalid point type", 400, "INVALID_POINT_TYPE");
     }
 
     if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
-      throw new Error("Invalid latitude value");
+      throw new AppError("Invalid latitude value", 400, "INVALID_LATITUDE");
     }
 
     if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-      throw new Error("Invalid longitude value");
+      throw new AppError("Invalid longitude value", 400, "INVALID_LONGITUDE");
     }
 
     return this.pointsRepository.create({ type, latitude, longitude });

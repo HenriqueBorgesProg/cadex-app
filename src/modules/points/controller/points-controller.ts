@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { PointType } from "../entity/Point";
 import { PointsService } from "../service/points-service";
+import { AppError } from "../../../shared/errors/AppError";
 
 interface CreatePointRequestBody {
     type: PointType;
@@ -17,7 +18,10 @@ export class PointsController {
     }
 
     async create(request: FastifyRequest, reply: FastifyReply) {
-        try {
+        if (!request.body) {
+        throw new AppError("Request body is required", 400, "REQUEST_BODY_REQUIRED");
+    }
+
             const { type, latitude, longitude } = request.body as CreatePointRequestBody;
             const point = await this.pointsService.createPoint({
                 type,
@@ -26,18 +30,16 @@ export class PointsController {
             });
 
             return reply.status(201).send(point);
-        } catch (error) {
-            return reply.status(400).send({ error: "Failed to create point" });
-        }
+
+
     }
 
     async findAll(request: FastifyRequest, reply: FastifyReply) {
-        try {
+
             const points = await this.pointsService.getAllPoints();
             return reply.status(200).send(points);
-        } catch (error) {
-            return reply.status(400).send({ error: "Failed to fetch points" });
-        }
+
+
     }
 
 }
