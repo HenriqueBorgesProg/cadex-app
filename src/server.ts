@@ -6,10 +6,9 @@ import cors from '@fastify/cors';
 app.register(cors, {
   origin: '*',
 });
-// Run the server!
+
 const start = async () => {
   try {
-    // Initialize database
     await AppDataSource.initialize();
     app.log.info('Database connected!');
 

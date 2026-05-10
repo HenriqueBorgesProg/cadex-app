@@ -19,7 +19,6 @@ export class NetworkService {
 
   constructor() {
     this.pointsRepository = new PointsRepository();
-
   }
 
   async generateNetwork(): Promise<GenerateNetworkOutput> {
@@ -33,9 +32,10 @@ export class NetworkService {
     }
 
     if (clients.length === 0) {
-      return { connections: [],
-                totalDistance: 0
-       };
+      return {
+        connections: [],
+        totalDistance: 0,
+      };
     }
 
     const connections = clients.map((client) => {
@@ -47,7 +47,11 @@ export class NetworkService {
         distance: nearestPole.distance,
       };
     });
-    const totalDistance = connections.reduce((sum, connection) => sum + connection.distance, 0);
+    const totalDistance = connections.reduce(
+      (sum, connection) => sum + connection.distance,
+      0
+    );
+
     return { connections, totalDistance };
   }
 

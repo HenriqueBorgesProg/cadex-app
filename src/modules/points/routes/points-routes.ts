@@ -1,4 +1,3 @@
-// points-routes.ts
 import { FastifyInstance } from "fastify";
 import { PointsController } from "../controller/points-controller";
 

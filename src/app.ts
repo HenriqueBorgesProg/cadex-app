@@ -5,10 +5,10 @@ import { networkRoutes } from './modules/network/routes/network-routes';
 
 export const app = fastify({ logger: true });
 
-// Declare a route
+app.setErrorHandler(errorHandler);
 app.register(pointsRoutes, { prefix: '/points' });
 app.register(networkRoutes, { prefix: '/network' });
+
 app.get('/', async (request, reply) => {
   return { hello: 'world' };
 });
-app.setErrorHandler(errorHandler);
