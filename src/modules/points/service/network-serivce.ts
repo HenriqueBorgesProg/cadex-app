@@ -17,6 +17,7 @@ export class NetworkService {
 
   constructor() {
     this.pointsRepository = new PointsRepository();
+
   }
 
   async generateNetwork(): Promise<GenerateNetworkOutput> {
