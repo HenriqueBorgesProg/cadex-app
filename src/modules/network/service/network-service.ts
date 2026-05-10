@@ -11,6 +11,7 @@ interface NetworkConnection {
 
 interface GenerateNetworkOutput {
   connections: NetworkConnection[];
+  totalDistance: number;
 }
 
 export class NetworkService {
@@ -32,7 +33,9 @@ export class NetworkService {
     }
 
     if (clients.length === 0) {
-      return { connections: [] };
+      return { connections: [],
+                totalDistance: 0
+       };
     }
 
     const connections = clients.map((client) => {
@@ -44,8 +47,8 @@ export class NetworkService {
         distance: nearestPole.distance,
       };
     });
-
-    return { connections };
+    const totalDistance = connections.reduce((sum, connection) => sum + connection.distance, 0);
+    return { connections, totalDistance };
   }
 
   private findNearestPole(
