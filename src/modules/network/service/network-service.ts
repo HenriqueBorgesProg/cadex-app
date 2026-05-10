@@ -1,6 +1,7 @@
 import { Point, PointType } from "../../points/entity/Point";
 import { PointsRepository } from "../../points/repository/points-repository";
 import { calculateDistanceInMeters } from "../../../shared/utils/calculate-distance";
+import { AppError } from "../../../shared/errors/AppError";
 
 interface NetworkConnection {
   clientId: string;
@@ -25,6 +26,14 @@ export class NetworkService {
 
     const clients = points.filter((point) => point.type === PointType.Client);
     const poles = points.filter((point) => point.type === PointType.Pole);
+
+    if (poles.length === 0) {
+      throw new AppError("No poles found in the database", 400, "NO_POLES_FOUND");
+    }
+
+    if (clients.length === 0) {
+      return { connections: [] };
+    }
 
     const connections = clients.map((client) => {
       const nearestPole = this.findNearestPole(client, poles);
