@@ -14,6 +14,7 @@ export class Point {
     @Column({
         type: "enum",
         enum: PointType,
+        enumName: "point_type_enum"
     })
     type!: PointType;
 
