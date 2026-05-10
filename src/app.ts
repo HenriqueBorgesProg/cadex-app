@@ -1,5 +1,6 @@
 import fastify from 'fastify';
 import { pointsRoutes } from './modules/points/routes/points-routes';
+import { errorHandler } from './shared/http/error-handler';
 
 export const app = fastify({ logger: true });
 
@@ -8,3 +9,4 @@ app.register(pointsRoutes, { prefix: '/points' });
 app.get('/', async (request, reply) => {
   return { hello: 'world' };
 });
+app.setErrorHandler(errorHandler);
