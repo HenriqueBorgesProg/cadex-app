@@ -299,7 +299,7 @@
   position: absolute;
   z-index: 600;
   top: 26px;
-  left: 26px;
+  left: auto;
   right: 26px;
   display: flex;
   align-items: center;
