@@ -4,8 +4,16 @@ O Cadex Network Optimizer é um MVP full-stack para visualizar e gerar uma rede 
 
 O sistema permite que os usuários criem pontos geográficos em um mapa, os classifiquem como `client` ou `pole`, persistam esses dados através do backend e gerem uma rede onde cada cliente é conectado ao polo mais próximo.
 
-### Demonstração do Projeto em Funcionamento:
+<div align="center">
+
+### Demonstração do funcionamento completo do sistema
+
 https://github.com/user-attachments/assets/3cd4622e-f446-42de-ac4b-dc3d6c57a15f
+
+</div>
+
+---
+
 ## Objetivo do Projeto
 
 O objetivo deste projeto é demonstrar:
