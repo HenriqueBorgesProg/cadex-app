@@ -4,6 +4,8 @@ O Cadex Network Optimizer é um MVP full-stack para visualizar e gerar uma rede 
 
 O sistema permite que os usuários criem pontos geográficos em um mapa, os classifiquem como `client` ou `pole`, persistam esses dados através do backend e gerem uma rede onde cada cliente é conectado ao polo mais próximo.
 
+### Demonstração do Projeto em Funcionamento:
+https://github.com/user-attachments/assets/3cd4622e-f446-42de-ac4b-dc3d6c57a15f
 ## Objetivo do Projeto
 
 O objetivo deste projeto é demonstrar:
@@ -37,11 +39,6 @@ O frontend não calcula a rede. Ele apenas envia dados, consome respostas da API
 - React Leaflet
 - Axios
 - Lucide React
-  
-### Demonstração
-
-
-
 
 ## Estrutura do Repositório
 
@@ -553,3 +550,28 @@ O MVP inclui:
 - Documentação da API
 
 O projeto está pronto para demonstração como um MVP full-stack.
+
+
+## Melhorias Futuras
+
+O projeto foi desenvolvido como um MVP focado em simplicidade arquitetural, validação de fluxo e demonstração técnica full-stack. Atualmente, a geração da rede utiliza distância geodésica entre pontos, sem considerar ruas ou rotas reais.
+
+As próximas evoluções planejadas incluem:
+
+- Integração com engines de roteamento reais
+- Cálculo de rotas baseado em ruas
+- Integração com OpenStreetMap
+- Utilização de APIs como OpenRouteService ou OSRM
+- Algoritmos de menor caminho
+- Otimização de rede
+- Clusterização geográfica
+- Cache de rotas para redução de custo computacional
+- Métricas avançadas de conexão
+- Suporte para múltiplos polos prioritários
+- Persistência de redes geradas
+- Atualização em tempo real das conexões
+- Dashboard analítico
+- Autenticação de usuários
+- Histórico de geração de redes
+
+A arquitetura atual foi organizada para permitir essas evoluções sem necessidade de reestruturação completa do sistema.
