@@ -1,23 +1,23 @@
 # Cadex Network Optimizer
 
-Cadex Network Optimizer is a full-stack MVP for visualizing and generating a simple geographic network between clients and poles.
+O Cadex Network Optimizer é um MVP full-stack para visualizar e gerar uma rede geográfica simples entre clientes e polos.
 
-The system lets users create geographic points on a map, classify them as `client` or `pole`, persist them through the backend, and generate a network where each client is connected to the nearest pole.
+O sistema permite que os usuários criem pontos geográficos em um mapa, os classifiquem como `client` ou `pole`, persistam esses dados através do backend e gerem uma rede onde cada cliente é conectado ao polo mais próximo.
 
-## Project Goal
+## Objetivo do Projeto
 
-The goal of this project is to demonstrate:
+O objetivo deste projeto é demonstrar:
 
-- Clean backend architecture
-- Database schema versioning with migrations
-- Separation between business logic and HTTP
-- Geospatial visualization with Leaflet
-- Frontend/backend integration
-- A practical product-like user flow
+- Arquitetura backend limpa
+- Versionamento de esquema de banco de dados com migrations
+- Separação entre lógica de negócio e camada HTTP
+- Visualização geoespacial com Leaflet
+- Integração frontend/backend
+- Um fluxo prático semelhante a um produto real
 
-The frontend does not calculate the network. It only sends data, consumes API responses, and renders the result. The backend owns the domain rules and distance calculation.
+O frontend não calcula a rede. Ele apenas envia dados, consome respostas da API e renderiza o resultado. O backend é responsável pelas regras de domínio e pelo cálculo de distância.
 
-## Tech Stack
+## Stack Tecnológica
 
 ### Backend
 
@@ -37,8 +37,13 @@ The frontend does not calculate the network. It only sends data, consumes API re
 - React Leaflet
 - Axios
 - Lucide React
+  
+### Demonstração
 
-## Repository Structure
+
+
+
+## Estrutura do Repositório
 
 ```txt
 cadex-app/
@@ -67,97 +72,97 @@ cadex-app/
     package.json
 ```
 
-## Domain Overview
+## Visão Geral do Domínio
 
-The domain has two main point types:
+O domínio possui dois tipos principais de pontos:
 
 ```txt
 client
 pole
 ```
 
-A `client` represents a customer location.
+Um `client` representa a localização de um cliente.
 
-A `pole` represents an infrastructure point that clients can connect to.
+Um `pole` representa um ponto de infraestrutura ao qual clientes podem se conectar.
 
-The network generation flow is:
+O fluxo de geração da rede é:
 
 ```txt
-1. Load all points from the database
-2. Separate clients and poles
-3. For each client, find the nearest pole
-4. Return a list of connections
-5. Return the total network distance
+1. Carregar todos os pontos do banco de dados
+2. Separar clientes e polos
+3. Para cada cliente, encontrar o polo mais próximo
+4. Retornar uma lista de conexões
+5. Retornar a distância total da rede
 ```
 
-Connections are generated in real time and are not stored in the database.
+As conexões são geradas em tempo real e não são armazenadas no banco de dados.
 
-## Backend Architecture
+## Arquitetura do Backend
 
-The backend follows this flow:
+O backend segue este fluxo:
 
 ```txt
 Controller -> Service -> Repository -> Database
 ```
 
-Responsibilities:
+Responsabilidades:
 
 ```txt
-Controller: handles HTTP request and response
-Service: contains business rules
-Repository: isolates database access
-Entity: describes database structure
-Utils: pure reusable functions
+Controller: lida com requisições e respostas HTTP
+Service: contém as regras de negócio
+Repository: isola o acesso ao banco de dados
+Entity: descreve a estrutura do banco
+Utils: funções reutilizáveis puras
 ```
 
-Important decisions:
+Decisões importantes:
 
-- TypeORM is isolated inside repositories
-- Business rules stay inside services
-- Controllers do not calculate domain logic
-- Database schema is controlled by migrations
-- `synchronize` is disabled
-- Error responses are centralized
+- O TypeORM é isolado dentro dos repositories
+- As regras de negócio permanecem dentro dos services
+- Controllers não calculam lógica de domínio
+- O esquema do banco é controlado por migrations
+- `synchronize` está desabilitado
+- Respostas de erro são centralizadas
 
-## Frontend Architecture
+## Arquitetura do Frontend
 
-The frontend follows this structure:
+O frontend segue esta estrutura:
 
 ```txt
-components: visual UI pieces
-hooks: state and user interaction orchestration
-pages: screen composition
-services: API communication
-types: shared TypeScript contracts
-styles: application CSS
+components: partes visuais da interface
+hooks: orquestração de estado e interações do usuário
+pages: composição das telas
+services: comunicação com a API
+types: contratos compartilhados em TypeScript
+styles: CSS da aplicação
 ```
 
-The frontend is responsible for:
+O frontend é responsável por:
 
-- Rendering the map
-- Creating points through user interaction
-- Calling backend endpoints
-- Showing loading and error states
-- Drawing points and network connections
-- Displaying network metrics
+- Renderizar o mapa
+- Criar pontos através da interação do usuário
+- Chamar endpoints do backend
+- Exibir estados de carregamento e erro
+- Desenhar pontos e conexões da rede
+- Mostrar métricas da rede
 
-The frontend is not responsible for:
+O frontend não é responsável por:
 
-- Calculating distances
-- Deciding which pole is nearest
-- Persisting connections
-- Owning business rules
+- Calcular distâncias
+- Decidir qual polo é o mais próximo
+- Persistir conexões
+- Definir regras de negócio
 
-## Prerequisites
+## Pré-requisitos
 
-Before running the project, make sure you have:
+Antes de executar o projeto, certifique-se de ter:
 
-- Node.js installed
-- npm installed
-- PostgreSQL running locally
-- A database named `cadex_network`
+- Node.js instalado
+- npm instalado
+- PostgreSQL rodando localmente
+- Um banco de dados chamado `cadex_network`
 
-The backend expects PostgreSQL with these default values:
+O backend espera um PostgreSQL com estes valores padrão:
 
 ```txt
 host: localhost
@@ -167,13 +172,13 @@ password: cadex
 database: cadex_network
 ```
 
-You can override them through environment variables.
+Você pode sobrescrevê-los através de variáveis de ambiente.
 
-## Environment Variables
+## Variáveis de Ambiente
 
 ### Backend
 
-Create `backend/.env`:
+Crie `backend/.env`:
 
 ```env
 PORT=3000
@@ -187,83 +192,83 @@ DB_NAME=cadex_network
 
 ### Frontend
 
-Create `frontend/.env`:
+Crie `frontend/.env`:
 
 ```env
 VITE_API_URL=http://localhost:3000
 ```
 
-There is already a sample file:
+Já existe um arquivo de exemplo:
 
 ```txt
 frontend/.env.example
 ```
 
-## Running The Backend
+## Executando o Backend
 
-Enter the backend folder:
+Entre na pasta do backend:
 
 ```bash
 cd backend
 ```
 
-Install dependencies:
+Instale as dependências:
 
 ```bash
 npm install
 ```
 
-Run database migrations:
+Execute as migrations do banco:
 
 ```bash
 npm run migration:run
 ```
 
-Start the backend:
+Inicie o backend:
 
 ```bash
 npm run dev
 ```
 
-The API will run at:
+A API estará disponível em:
 
 ```txt
 http://localhost:3000
 ```
 
-## Running The Frontend
+## Executando o Frontend
 
-Enter the frontend folder:
+Entre na pasta do frontend:
 
 ```bash
 cd frontend
 ```
 
-Install dependencies:
+Instale as dependências:
 
 ```bash
 npm install
 ```
 
-Start the frontend:
+Inicie o frontend:
 
 ```bash
 npm run dev
 ```
 
-The application will run at:
+A aplicação estará disponível em:
 
 ```txt
 http://localhost:5173
 ```
 
-or:
+ou:
 
 ```txt
 http://127.0.0.1:5173
 ```
 
-## Useful Scripts
+## Scripts Úteis
 
 ### Backend
 
@@ -284,9 +289,9 @@ npm run lint
 npm run preview
 ```
 
-## API Summary
+## Resumo da API
 
-The complete API contract is available at:
+O contrato completo da API está disponível em:
 
 ```txt
 backend/docs/api-contract.md
@@ -294,7 +299,7 @@ backend/docs/api-contract.md
 
 ### POST /points
 
-Creates a point.
+Cria um ponto.
 
 Request:
 
@@ -321,7 +326,7 @@ Response:
 
 ### GET /points
 
-Lists all points.
+Lista todos os pontos.
 
 Response:
 
@@ -340,7 +345,7 @@ Response:
 
 ### POST /network/generate
 
-Generates the network from the points stored in the database.
+Gera a rede a partir dos pontos armazenados no banco de dados.
 
 Request body:
 
@@ -363,11 +368,11 @@ Response:
 }
 ```
 
-Distances are returned in meters.
+As distâncias são retornadas em metros.
 
-## Error Format
+## Formato de Erro
 
-Application errors follow this structure:
+Erros da aplicação seguem esta estrutura:
 
 ```json
 {
@@ -379,7 +384,7 @@ Application errors follow this structure:
 }
 ```
 
-Unexpected errors follow this structure:
+Erros inesperados seguem esta estrutura:
 
 ```json
 {
@@ -391,47 +396,47 @@ Unexpected errors follow this structure:
 }
 ```
 
-## Main User Flow
+## Fluxo Principal do Usuário
 
-1. Open the frontend
-2. Select the point type: `client` or `pole`
-3. Click on the map
-4. Save the selected point
-5. Repeat until there are clients and poles
-6. Click `Generate network`
-7. View connections on the map
-8. Read total distance and connection metrics
+1. Abrir o frontend
+2. Selecionar o tipo de ponto: `client` ou `pole`
+3. Clicar no mapa
+4. Salvar o ponto selecionado
+5. Repetir até existirem clientes e polos
+6. Clicar em `Generate network`
+7. Visualizar conexões no mapa
+8. Ler a distância total e métricas de conexão
 
-## Frontend Features
+## Funcionalidades do Frontend
 
-- Interactive map
-- Point creation by map click
-- Client and pole visual differentiation
-- Point list
-- Network generation button
-- Connection rendering with polylines
-- Total distance metric
-- Connection count
-- Loading states
-- Error messages
+- Mapa interativo
+- Criação de pontos ao clicar no mapa
+- Diferenciação visual entre clientes e polos
+- Lista de pontos
+- Botão de geração da rede
+- Renderização de conexões com polylines
+- Métrica de distância total
+- Quantidade de conexões
+- Estados de carregamento
+- Mensagens de erro
 
-## Backend Features
+## Funcionalidades do Backend
 
-- Point entity
-- Point repository
-- Point service
-- Point API
-- Error handling
-- Distance utility
-- Network generation service
-- Network API
-- Network metrics
-- Edge case handling
-- API contract documentation
+- Entidade Point
+- Repository de Point
+- Service de Point
+- API de Point
+- Tratamento de erros
+- Utilitário de distância
+- Service de geração da rede
+- API da rede
+- Métricas da rede
+- Tratamento de casos extremos
+- Documentação do contrato da API
 
-## Validation Checklist
+## Checklist de Validação
 
-Before presenting the project, run:
+Antes de apresentar o projeto, execute:
 
 ```bash
 cd backend
@@ -444,7 +449,7 @@ npm run lint
 npm run build
 ```
 
-Then manually test:
+Depois teste manualmente:
 
 ```txt
 POST /points
@@ -452,7 +457,7 @@ GET /points
 POST /network/generate
 ```
 
-In the frontend, test:
+No frontend, teste:
 
 ```txt
 Create client
@@ -463,41 +468,41 @@ View total distance
 Refresh points
 ```
 
-## Troubleshooting
+## Solução de Problemas
 
-### Backend cannot connect to database
+### Backend não consegue conectar ao banco
 
-Check if PostgreSQL is running.
+Verifique se o PostgreSQL está em execução.
 
-The common error is:
+O erro mais comum é:
 
 ```txt
 ECONNREFUSED 127.0.0.1:5432
 ```
 
-That means the backend could not reach PostgreSQL.
+Isso significa que o backend não conseguiu alcançar o PostgreSQL.
 
-### Frontend shows request errors
+### Frontend mostra erros de requisição
 
-Check if the backend is running at:
+Verifique se o backend está rodando em:
 
 ```txt
 http://localhost:3000
 ```
 
-Also check `frontend/.env`:
+Também verifique `frontend/.env`:
 
 ```env
 VITE_API_URL=http://localhost:3000
 ```
 
-### Map does not load tiles
+### O mapa não carrega os tiles
 
-Check your internet connection. The map uses OpenStreetMap tiles.
+Verifique sua conexão com a internet. O mapa utiliza tiles do OpenStreetMap.
 
-### Network generation returns no poles error
+### A geração da rede retorna erro de ausência de polos
 
-Create at least one point with:
+Crie pelo menos um ponto com:
 
 ```json
 {
@@ -505,9 +510,9 @@ Create at least one point with:
 }
 ```
 
-### Network generation returns empty connections
+### A geração da rede retorna conexões vazias
 
-Create at least one point with:
+Crie pelo menos um ponto com:
 
 ```json
 {
@@ -515,15 +520,15 @@ Create at least one point with:
 }
 ```
 
-## Versioning Workflow
+## Fluxo de Versionamento
 
-Recommended flow:
+Fluxo recomendado:
 
 ```txt
 develop -> feature branch -> commits -> PR -> merge -> delete branch
 ```
 
-Commit examples:
+Exemplos de commits:
 
 ```txt
 feat: cria interface do mapa
@@ -533,18 +538,18 @@ fix: corrige tratamento de erro no frontend
 docs: documenta execucao do projeto
 ```
 
-## Project Status
+## Status do Projeto
 
-The MVP includes:
+O MVP inclui:
 
-- Functional backend
-- Versioned database schema
-- Functional frontend
-- Interactive map
-- Point persistence
-- Network generation
-- Visual connection rendering
-- Metrics panel
-- API documentation
+- Backend funcional
+- Esquema de banco versionado
+- Frontend funcional
+- Mapa interativo
+- Persistência de pontos
+- Geração de rede
+- Renderização visual das conexões
+- Painel de métricas
+- Documentação da API
 
-The project is ready for demonstration as a full-stack MVP.
+O projeto está pronto para demonstração como um MVP full-stack.
