@@ -24,6 +24,12 @@ export interface NetworkConnection {
   clientId: string;
   poleId: string;
   distance: number;
+  geometry?: RouteCoordinate[];
+}
+
+export interface RouteCoordinate {
+  latitude: number;
+  longitude: number;
 }
 
 export interface NetworkResult {

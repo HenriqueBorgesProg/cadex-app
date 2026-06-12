@@ -12,7 +12,7 @@ const start = async () => {
     await AppDataSource.initialize();
     app.log.info('Database connected!');
 
-    await app.listen({ port: 3000 });
+    await app.listen({ host: '0.0.0.0', port: 3000 });
     const address = app.server.address() as AddressInfo;
     app.log.info(`server listening on ${address?.port}`);
   } catch (err) {
