@@ -195,7 +195,17 @@ Status: `200 OK`
     {
       "clientId": "4446c36e-982d-432e-aa80-dd36b3af644c",
       "poleId": "e14b8e36-f533-425f-a17d-dfbdff995889",
-      "distance": 224642.13
+      "distance": 224642.13,
+      "geometry": [
+        {
+          "latitude": -22.9068,
+          "longitude": -43.1729
+        },
+        {
+          "latitude": -23.5505,
+          "longitude": -46.6333
+        }
+      ]
     }
   ],
   "totalDistance": 224642.13
@@ -208,7 +218,8 @@ Fields:
 connections: generated client-to-pole connections
 clientId: UUID of the client point
 poleId: UUID of the nearest pole point
-distance: geographic distance in meters
+distance: route distance in meters when available, otherwise geographic fallback distance
+geometry: route coordinates returned by the backend for map rendering
 totalDistance: sum of all connection distances in meters
 ```
 

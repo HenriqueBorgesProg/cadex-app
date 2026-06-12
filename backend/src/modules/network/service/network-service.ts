@@ -1,12 +1,13 @@
 import { Point, PointType } from "../../points/entity/Point";
 import { PointsRepository } from "../../points/repository/points-repository";
-import { calculateDistanceInMeters } from "../../../shared/utils/calculate-distance";
 import { AppError } from "../../../shared/errors/AppError";
+import { RoadRouteService, RouteCoordinate } from "./road-route-service";
 
 interface NetworkConnection {
   clientId: string;
   poleId: string;
   distance: number;
+  geometry: RouteCoordinate[];
 }
 
 interface GenerateNetworkOutput {
@@ -16,9 +17,11 @@ interface GenerateNetworkOutput {
 
 export class NetworkService {
   private pointsRepository: PointsRepository;
+  private roadRouteService: RoadRouteService;
 
   constructor() {
     this.pointsRepository = new PointsRepository();
+    this.roadRouteService = new RoadRouteService();
   }
 
   async generateNetwork(): Promise<GenerateNetworkOutput> {
@@ -38,15 +41,19 @@ export class NetworkService {
       };
     }
 
-    const connections = clients.map((client) => {
-      const nearestPole = this.findNearestPole(client, poles);
+    const connections: NetworkConnection[] = [];
 
-      return {
+    for (const client of clients) {
+      const nearestPole = await this.findNearestPole(client, poles);
+
+      connections.push({
         clientId: client.id,
         poleId: nearestPole.pole.id,
         distance: nearestPole.distance,
-      };
-    });
+        geometry: nearestPole.geometry,
+      });
+    }
+
     const totalDistance = connections.reduce(
       (sum, connection) => sum + connection.distance,
       0
@@ -55,16 +62,17 @@ export class NetworkService {
     return { connections, totalDistance };
   }
 
-  private findNearestPole(
+  private async findNearestPole(
     client: Point,
     poles: Point[]
-  ): { pole: Point; distance: number } {
+  ): Promise<{ pole: Point; distance: number; geometry: RouteCoordinate[] }> {
+    const clientCoordinate = {
+      latitude: client.latitude,
+      longitude: client.longitude,
+    };
     let nearestPole = poles[0];
-    let shortestDistance = calculateDistanceInMeters(
-      {
-        latitude: client.latitude,
-        longitude: client.longitude,
-      },
+    let shortestRoute = await this.roadRouteService.calculateRoute(
+      clientCoordinate,
       {
         latitude: nearestPole.latitude,
         longitude: nearestPole.longitude,
@@ -72,26 +80,21 @@ export class NetworkService {
     );
 
     for (const pole of poles.slice(1)) {
-      const distance = calculateDistanceInMeters(
-        {
-          latitude: client.latitude,
-          longitude: client.longitude,
-        },
-        {
-          latitude: pole.latitude,
-          longitude: pole.longitude,
-        }
-      );
+      const route = await this.roadRouteService.calculateRoute(clientCoordinate, {
+        latitude: pole.latitude,
+        longitude: pole.longitude,
+      });
 
-      if (distance < shortestDistance) {
-        shortestDistance = distance;
+      if (route.distance < shortestRoute.distance) {
+        shortestRoute = route;
         nearestPole = pole;
       }
     }
 
     return {
       pole: nearestPole,
-      distance: shortestDistance,
+      distance: shortestRoute.distance,
+      geometry: shortestRoute.geometry,
     };
   }
 }

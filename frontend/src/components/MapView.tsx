@@ -52,10 +52,7 @@ export function MapView({
               opacity: 0.82,
               weight: 4,
             }}
-            positions={[
-              [connection.client.latitude, connection.client.longitude],
-              [connection.pole.latitude, connection.pole.longitude],
-            ]}
+            positions={getConnectionPositions(connection)}
           >
             <Popup>
               <strong>Connection</strong>
@@ -166,4 +163,20 @@ function formatMeters(distance: number): string {
   }
 
   return `${distance.toFixed(0)} m`;
+}
+
+function getConnectionPositions(
+  connection: ConnectionSegment
+): [number, number][] {
+  if (connection.geometry?.length) {
+    return connection.geometry.map((coordinate) => [
+      coordinate.latitude,
+      coordinate.longitude,
+    ]);
+  }
+
+  return [
+    [connection.client.latitude, connection.client.longitude],
+    [connection.pole.latitude, connection.pole.longitude],
+  ];
 }
