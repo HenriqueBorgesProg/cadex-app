@@ -12,11 +12,18 @@ import type { LatLngBoundsExpression } from "leaflet";
 import { POINT_TYPES } from "../types/domain";
 import type { ConnectionSegment, PendingPoint, Point } from "../types/domain";
 
+interface SelectedRoutePointIds {
+  originPointId: string | null;
+  destinationPointId: string | null;
+}
+
 interface MapViewProps {
   points: Point[];
   pendingPoint: PendingPoint | null;
   connections: ConnectionSegment[];
+  selectedRoutePointIds: SelectedRoutePointIds;
   onMapClick: (point: PendingPoint) => void;
+  onPointClick: (point: Point) => void;
 }
 
 const defaultCenter: [number, number] = [-23.25, -44.9];
@@ -25,7 +32,9 @@ export function MapView({
   points,
   pendingPoint,
   connections,
+  selectedRoutePointIds,
   onMapClick,
+  onPointClick,
 }: MapViewProps) {
   return (
     <div className="map-shell">
@@ -65,18 +74,24 @@ export function MapView({
           <CircleMarker
             key={point.id}
             center={[point.latitude, point.longitude]}
-            radius={point.type === POINT_TYPES.Client ? 8 : 9}
-            pathOptions={{
-              color: point.type === POINT_TYPES.Client ? "#1b5f9e" : "#8a4b14",
-              fillColor:
-                point.type === POINT_TYPES.Client ? "#2d8ad8" : "#d9842b",
-              fillOpacity: 0.92,
-              weight: 2,
+            radius={getPointRadius(point, selectedRoutePointIds)}
+            pathOptions={getPointPathOptions(point, selectedRoutePointIds)}
+            eventHandlers={{
+              click(event) {
+                event.originalEvent.stopPropagation();
+                onPointClick(point);
+              },
             }}
           >
             <Popup>
               <strong>{point.type === POINT_TYPES.Client ? "Client" : "Pole"}</strong>
               <span>{point.id}</span>
+              {point.id === selectedRoutePointIds.originPointId ? (
+                <span>Route origin</span>
+              ) : null}
+              {point.id === selectedRoutePointIds.destinationPointId ? (
+                <span>Route destination</span>
+              ) : null}
               <span>
                 {point.latitude.toFixed(5)}, {point.longitude.toFixed(5)}
               </span>
@@ -163,6 +178,50 @@ function formatMeters(distance: number): string {
   }
 
   return `${distance.toFixed(0)} m`;
+}
+
+function getPointRadius(
+  point: Point,
+  selectedRoutePointIds: SelectedRoutePointIds
+): number {
+  if (
+    point.id === selectedRoutePointIds.originPointId ||
+    point.id === selectedRoutePointIds.destinationPointId
+  ) {
+    return 12;
+  }
+
+  return point.type === POINT_TYPES.Client ? 8 : 9;
+}
+
+function getPointPathOptions(
+  point: Point,
+  selectedRoutePointIds: SelectedRoutePointIds
+) {
+  if (point.id === selectedRoutePointIds.originPointId) {
+    return {
+      color: "#17211b",
+      fillColor: "#5fc878",
+      fillOpacity: 0.95,
+      weight: 3,
+    };
+  }
+
+  if (point.id === selectedRoutePointIds.destinationPointId) {
+    return {
+      color: "#17211b",
+      fillColor: "#7c5cff",
+      fillOpacity: 0.95,
+      weight: 3,
+    };
+  }
+
+  return {
+    color: point.type === POINT_TYPES.Client ? "#1b5f9e" : "#8a4b14",
+    fillColor: point.type === POINT_TYPES.Client ? "#2d8ad8" : "#d9842b",
+    fillOpacity: 0.92,
+    weight: 2,
+  };
 }
 
 function getConnectionPositions(
