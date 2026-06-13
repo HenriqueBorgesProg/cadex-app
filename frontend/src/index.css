@@ -50,3 +50,19 @@ button {
 .leaflet-popup-content {
   margin: 10px 12px;
 }
+
+.suggested-pole-popup {
+  display: grid;
+  gap: 4px;
+  min-width: 150px;
+}
+
+.suggested-pole-popup strong,
+.suggested-pole-popup span {
+  display: block;
+}
+
+.suggested-pole-popup span {
+  color: #4d5a51;
+  font-size: 12px;
+}
