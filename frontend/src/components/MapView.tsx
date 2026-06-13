@@ -97,6 +97,31 @@ export function MapView({
           </Polyline>
         ) : null}
 
+        {routePreview?.suggestedPoles.map((pole) => (
+          <CircleMarker
+            key={`suggested-pole-${pole.sequence}`}
+            center={[pole.latitude, pole.longitude]}
+            radius={6}
+            pathOptions={{
+              color: "#17211b",
+              fillColor: "#f8d463",
+              fillOpacity: 0.9,
+              opacity: 0.95,
+              weight: 2,
+            }}
+          >
+            <Popup>
+              <div className="suggested-pole-popup">
+                <strong>Suggested pole #{pole.sequence}</strong>
+                <span>{formatMeters(pole.distanceFromOriginMeters)} from origin</span>
+                <span>
+                  {pole.latitude.toFixed(5)}, {pole.longitude.toFixed(5)}
+                </span>
+              </div>
+            </Popup>
+          </CircleMarker>
+        ))}
+
         {points.map((point) => (
           <CircleMarker
             key={point.id}
@@ -195,6 +220,12 @@ function MapBounds({
         ...routePreview.routeGeometry.map<[number, number]>((coordinate) => [
           coordinate.latitude,
           coordinate.longitude,
+        ])
+      );
+      coordinates.push(
+        ...routePreview.suggestedPoles.map<[number, number]>((pole) => [
+          pole.latitude,
+          pole.longitude,
         ])
       );
     }
