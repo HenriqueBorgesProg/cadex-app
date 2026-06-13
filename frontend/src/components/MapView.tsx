@@ -10,7 +10,12 @@ import {
 } from "react-leaflet";
 import type { LatLngBoundsExpression } from "leaflet";
 import { POINT_TYPES } from "../types/domain";
-import type { ConnectionSegment, PendingPoint, Point } from "../types/domain";
+import type {
+  ConnectionSegment,
+  PendingPoint,
+  Point,
+  RoutePreviewResult,
+} from "../types/domain";
 
 interface SelectedRoutePointIds {
   originPointId: string | null;
@@ -21,6 +26,7 @@ interface MapViewProps {
   points: Point[];
   pendingPoint: PendingPoint | null;
   connections: ConnectionSegment[];
+  routePreview: RoutePreviewResult | null;
   selectedRoutePointIds: SelectedRoutePointIds;
   onMapClick: (point: PendingPoint) => void;
   onPointClick: (point: Point) => void;
@@ -32,6 +38,7 @@ export function MapView({
   points,
   pendingPoint,
   connections,
+  routePreview,
   selectedRoutePointIds,
   onMapClick,
   onPointClick,
@@ -51,7 +58,11 @@ export function MapView({
         />
 
         <MapClickHandler onMapClick={onMapClick} />
-        <MapBounds points={points} pendingPoint={pendingPoint} />
+        <MapBounds
+          points={points}
+          pendingPoint={pendingPoint}
+          routePreview={routePreview}
+        />
 
         {connections.map((connection) => (
           <Polyline
@@ -69,6 +80,22 @@ export function MapView({
             </Popup>
           </Polyline>
         ))}
+
+        {routePreview ? (
+          <Polyline
+            pathOptions={{
+              color: "#7c5cff",
+              opacity: 0.92,
+              weight: 5,
+            }}
+            positions={getRoutePreviewPositions(routePreview)}
+          >
+            <Popup>
+              <strong>Route simulation</strong>
+              <span>{formatMeters(routePreview.distanceMeters)}</span>
+            </Popup>
+          </Polyline>
+        ) : null}
 
         {points.map((point) => (
           <CircleMarker
@@ -145,9 +172,11 @@ function MapClickHandler({
 function MapBounds({
   points,
   pendingPoint,
+  routePreview,
 }: {
   points: Point[];
   pendingPoint: PendingPoint | null;
+  routePreview: RoutePreviewResult | null;
 }) {
   const map = useMap();
 
@@ -161,13 +190,22 @@ function MapBounds({
       coordinates.push([pendingPoint.latitude, pendingPoint.longitude]);
     }
 
+    if (routePreview) {
+      coordinates.push(
+        ...routePreview.routeGeometry.map<[number, number]>((coordinate) => [
+          coordinate.latitude,
+          coordinate.longitude,
+        ])
+      );
+    }
+
     if (coordinates.length === 0) {
       return;
     }
 
     const bounds = coordinates as LatLngBoundsExpression;
     map.fitBounds(bounds, { padding: [42, 42], maxZoom: 13 });
-  }, [map, pendingPoint, points]);
+  }, [map, pendingPoint, points, routePreview]);
 
   return null;
 }
@@ -238,4 +276,13 @@ function getConnectionPositions(
     [connection.client.latitude, connection.client.longitude],
     [connection.pole.latitude, connection.pole.longitude],
   ];
+}
+
+function getRoutePreviewPositions(
+  routePreview: RoutePreviewResult
+): [number, number][] {
+  return routePreview.routeGeometry.map((coordinate) => [
+    coordinate.latitude,
+    coordinate.longitude,
+  ]);
 }
