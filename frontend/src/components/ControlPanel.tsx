@@ -234,6 +234,12 @@ function RoutePreviewSummary({ preview }: { preview: RoutePreviewResult }) {
         Suggested poles: <strong>{preview.poleCount}</strong>
       </p>
       <p>
+        Cable cost: <strong>{formatCurrency(preview.cableCost)}</strong>
+      </p>
+      <p>
+        Pole cost: <strong>{formatCurrency(preview.polesCost)}</strong>
+      </p>
+      <p>
         Estimated cost: <strong>{formatCurrency(preview.totalEstimatedCost)}</strong>
       </p>
     </div>

@@ -43,6 +43,7 @@ export function NetworkOptimizerPage() {
           clients={optimizer.pointTotals.clients}
           poles={optimizer.pointTotals.poles}
           network={optimizer.network}
+          routePreview={optimizer.routePreview}
         />
 
         <PointList points={optimizer.points} />

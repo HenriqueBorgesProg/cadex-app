@@ -9,6 +9,8 @@ export interface RoadRoute {
   distance: number;
   geometry: RouteCoordinate[];
   duration?: number;
+  routeOrigin: RouteCoordinate;
+  routeDestination: RouteCoordinate;
 }
 
 interface OsrmRouteResponse {
@@ -22,12 +24,41 @@ interface OsrmRouteResponse {
   }>;
 }
 
+interface OsrmNearestResponse {
+  code: string;
+  waypoints?: Array<{
+    distance?: number;
+    location: [number, number];
+  }>;
+}
+
 export class RoadRouteService {
+  private readonly maxRoadRouteAttempts = 5;
+
+  async calculateRoadRoute(
+    from: RouteCoordinate,
+    to: RouteCoordinate
+  ): Promise<RoadRoute | null> {
+    for (let attempt = 1; attempt <= this.maxRoadRouteAttempts; attempt += 1) {
+      const roadRoute = await this.tryCalculateRoadRoute(from, to);
+
+      if (roadRoute) {
+        return roadRoute;
+      }
+
+      if (attempt < this.maxRoadRouteAttempts) {
+        await this.wait(400 * attempt);
+      }
+    }
+
+    return null;
+  }
+
   async calculateRoute(
     from: RouteCoordinate,
     to: RouteCoordinate
   ): Promise<RoadRoute> {
-    const roadRoute = await this.tryCalculateRoadRoute(from, to);
+    const roadRoute = await this.calculateRoadRoute(from, to);
 
     if (roadRoute) {
       return roadRoute;
@@ -36,6 +67,8 @@ export class RoadRouteService {
     return {
       distance: calculateDistanceInMeters(from, to),
       geometry: [from, to],
+      routeOrigin: from,
+      routeDestination: to,
     };
   }
 
@@ -43,8 +76,15 @@ export class RoadRouteService {
     from: RouteCoordinate,
     to: RouteCoordinate
   ): Promise<RoadRoute | null> {
+    const routeOrigin = await this.findNearestRoadCoordinate(from);
+    const routeDestination = await this.findNearestRoadCoordinate(to);
+
+    if (!routeOrigin || !routeDestination) {
+      return null;
+    }
+
     const url = new URL(
-      `https://router.project-osrm.org/route/v1/driving/${from.longitude},${from.latitude};${to.longitude},${to.latitude}`
+      `https://router.project-osrm.org/route/v1/driving/${routeOrigin.longitude},${routeOrigin.latitude};${routeDestination.longitude},${routeDestination.latitude}`
     );
     url.searchParams.set("overview", "full");
     url.searchParams.set("geometries", "geojson");
@@ -71,6 +111,8 @@ export class RoadRouteService {
       return {
         distance: route.distance,
         duration: Number.isFinite(route.duration) ? route.duration : undefined,
+        routeOrigin,
+        routeDestination,
         geometry: route.geometry.coordinates.map(([longitude, latitude]) => ({
           latitude,
           longitude,
@@ -79,5 +121,45 @@ export class RoadRouteService {
     } catch {
       return null;
     }
+  }
+
+  private async findNearestRoadCoordinate(
+    coordinate: RouteCoordinate
+  ): Promise<RouteCoordinate | null> {
+    const url = new URL(
+      `https://router.project-osrm.org/nearest/v1/driving/${coordinate.longitude},${coordinate.latitude}`
+    );
+    url.searchParams.set("number", "1");
+
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = (await response.json()) as OsrmNearestResponse;
+      const waypoint = data.waypoints?.[0];
+
+      if (data.code !== "Ok" || !waypoint) {
+        return null;
+      }
+
+      const [longitude, latitude] = waypoint.location;
+
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        return null;
+      }
+
+      return { latitude, longitude };
+    } catch {
+      return null;
+    }
+  }
+
+  private async wait(milliseconds: number): Promise<void> {
+    await new Promise((resolve) => {
+      setTimeout(resolve, milliseconds);
+    });
   }
 }

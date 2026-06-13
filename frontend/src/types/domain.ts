@@ -55,6 +55,8 @@ export interface SuggestedPole {
 export interface RoutePreviewResult {
   origin: Point;
   destination: Point;
+  routeOrigin: RouteCoordinate;
+  routeDestination: RouteCoordinate;
   routeGeometry: RouteCoordinate[];
   distanceMeters: number;
   durationSeconds?: number;
