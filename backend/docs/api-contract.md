@@ -256,3 +256,181 @@ Status: `400 Bad Request`
 - Network connections are not stored in the database.
 - A point must be created as either `client` or `pole`.
 - Latitude and longitude must be sent as JSON numbers, not strings.
+
+## POST /routes/preview
+
+Generates a route planning preview between two existing points.
+
+Request body:
+
+```json
+{
+  "originPointId": "b776c49b-5703-452a-ae0a-700f13a05502",
+  "destinationPointId": "4446c36e-982d-432e-aa80-dd36b3af644c",
+  "poleSpacingMeters": 100,
+  "cableCostPerMeter": 4.5,
+  "poleUnitCost": 250
+}
+```
+
+The preview uses real road route geometry when available. Suggested poles are generated along the returned route geometry and are not persisted in the database.
+
+Success response:
+
+Status: `200 OK`
+
+```json
+{
+  "origin": {
+    "id": "b776c49b-5703-452a-ae0a-700f13a05502",
+    "type": "pole",
+    "latitude": -23.5505,
+    "longitude": -46.6333,
+    "createdAt": "2026-05-09T17:10:10.686Z",
+    "updatedAt": "2026-05-09T17:10:10.686Z"
+  },
+  "destination": {
+    "id": "4446c36e-982d-432e-aa80-dd36b3af644c",
+    "type": "client",
+    "latitude": -23.5596,
+    "longitude": -46.6588,
+    "createdAt": "2026-05-09T17:10:54.779Z",
+    "updatedAt": "2026-05-09T17:10:54.779Z"
+  },
+  "routeGeometry": [
+    {
+      "latitude": -23.5505,
+      "longitude": -46.6333
+    },
+    {
+      "latitude": -23.5596,
+      "longitude": -46.6588
+    }
+  ],
+  "distanceMeters": 3500,
+  "durationSeconds": 420,
+  "suggestedPoles": [
+    {
+      "sequence": 1,
+      "latitude": -23.5511,
+      "longitude": -46.6342,
+      "distanceFromOriginMeters": 100
+    }
+  ],
+  "poleCount": 35,
+  "cableCost": 15750,
+  "polesCost": 8750,
+  "totalEstimatedCost": 24500
+}
+```
+
+Fields:
+
+```txt
+origin: point used as route start
+destination: point used as route end
+routeGeometry: route coordinates using latitude and longitude fields
+distanceMeters: route distance in meters
+durationSeconds: estimated route duration in seconds when available
+suggestedPoles: simulated pole coordinates along the route geometry
+poleCount: number of suggested poles
+cableCost: distanceMeters multiplied by cableCostPerMeter
+polesCost: poleCount multiplied by poleUnitCost
+totalEstimatedCost: cableCost plus polesCost
+```
+
+Possible errors:
+
+Status: `400 Bad Request`
+
+```json
+{
+  "error": {
+    "message": "Request body is required",
+    "code": "REQUEST_BODY_REQUIRED",
+    "statusCode": 400
+  }
+}
+```
+
+```json
+{
+  "error": {
+    "message": "Origin point id is required",
+    "code": "ORIGIN_POINT_ID_REQUIRED",
+    "statusCode": 400
+  }
+}
+```
+
+```json
+{
+  "error": {
+    "message": "Destination point id is required",
+    "code": "DESTINATION_POINT_ID_REQUIRED",
+    "statusCode": 400
+  }
+}
+```
+
+```json
+{
+  "error": {
+    "message": "Origin and destination must be different points",
+    "code": "SAME_ORIGIN_AND_DESTINATION",
+    "statusCode": 400
+  }
+}
+```
+
+```json
+{
+  "error": {
+    "message": "Pole spacing must be greater than zero",
+    "code": "INVALID_POLE_SPACING",
+    "statusCode": 400
+  }
+}
+```
+
+```json
+{
+  "error": {
+    "message": "Cable cost per meter must be greater than zero",
+    "code": "INVALID_CABLE_COST_PER_METER",
+    "statusCode": 400
+  }
+}
+```
+
+```json
+{
+  "error": {
+    "message": "Pole unit cost must be greater than zero",
+    "code": "INVALID_POLE_UNIT_COST",
+    "statusCode": 400
+  }
+}
+```
+
+Status: `404 Not Found`
+
+```json
+{
+  "error": {
+    "message": "Origin point not found",
+    "code": "ORIGIN_POINT_NOT_FOUND",
+    "statusCode": 404
+  }
+}
+```
+
+```json
+{
+  "error": {
+    "message": "Destination point not found",
+    "code": "DESTINATION_POINT_NOT_FOUND",
+    "statusCode": 404
+  }
+}
+```

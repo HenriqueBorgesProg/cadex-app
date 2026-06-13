@@ -23,4 +23,8 @@ export class PointsRepository {
   async findAll(): Promise<Point[]> {
     return this.repository.find();
   }
+
+  async findById(id: string): Promise<Point | null> {
+    return this.repository.findOne({ where: { id } });
+  }
 }

@@ -8,12 +8,14 @@ export interface RouteCoordinate {
 export interface RoadRoute {
   distance: number;
   geometry: RouteCoordinate[];
+  duration?: number;
 }
 
 interface OsrmRouteResponse {
   code: string;
   routes?: Array<{
     distance: number;
+    duration?: number;
     geometry?: {
       coordinates: Array<[number, number]>;
     };
@@ -68,6 +70,7 @@ export class RoadRouteService {
 
       return {
         distance: route.distance,
+        duration: Number.isFinite(route.duration) ? route.duration : undefined,
         geometry: route.geometry.coordinates.map(([longitude, latitude]) => ({
           latitude,
           longitude,
