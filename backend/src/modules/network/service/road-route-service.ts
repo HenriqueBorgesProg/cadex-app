@@ -34,6 +34,7 @@ interface OsrmNearestResponse {
 
 export class RoadRouteService {
   private readonly maxRoadRouteAttempts = 5;
+  private readonly osrmProfile = "walking";
 
   async calculateRoadRoute(
     from: RouteCoordinate,
@@ -84,7 +85,7 @@ export class RoadRouteService {
     }
 
     const url = new URL(
-      `https://router.project-osrm.org/route/v1/driving/${routeOrigin.longitude},${routeOrigin.latitude};${routeDestination.longitude},${routeDestination.latitude}`
+      `https://router.project-osrm.org/route/v1/${this.osrmProfile}/${routeOrigin.longitude},${routeOrigin.latitude};${routeDestination.longitude},${routeDestination.latitude}`
     );
     url.searchParams.set("overview", "full");
     url.searchParams.set("geometries", "geojson");
@@ -127,7 +128,7 @@ export class RoadRouteService {
     coordinate: RouteCoordinate
   ): Promise<RouteCoordinate | null> {
     const url = new URL(
-      `https://router.project-osrm.org/nearest/v1/driving/${coordinate.longitude},${coordinate.latitude}`
+      `https://router.project-osrm.org/nearest/v1/${this.osrmProfile}/${coordinate.longitude},${coordinate.latitude}`
     );
     url.searchParams.set("number", "1");
 
