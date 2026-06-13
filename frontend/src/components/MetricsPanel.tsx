@@ -1,11 +1,12 @@
 import { Activity, MapPin, Radio, Route, User } from "lucide-react";
-import type { NetworkResult } from "../types/domain";
+import type { NetworkResult, RoutePreviewResult } from "../types/domain";
 
 interface MetricsPanelProps {
   totalPoints: number;
   clients: number;
   poles: number;
   network: NetworkResult;
+  routePreview: RoutePreviewResult | null;
 }
 
 export function MetricsPanel({
@@ -13,11 +14,49 @@ export function MetricsPanel({
   clients,
   poles,
   network,
+  routePreview,
 }: MetricsPanelProps) {
   const averageDistance =
     network.connections.length > 0
       ? network.totalDistance / network.connections.length
       : 0;
+
+  if (routePreview) {
+    return (
+      <section className="metrics-grid" aria-label="Route planning metrics">
+        <MetricItem
+          icon={<Route size={18} />}
+          label="Route distance"
+          value={formatDistance(routePreview.distanceMeters)}
+        />
+        <MetricItem
+          icon={<Radio size={18} />}
+          label="Suggested poles"
+          value={String(routePreview.poleCount)}
+        />
+        <MetricItem
+          icon={<Activity size={18} />}
+          label="Cable cost"
+          value={formatCurrency(routePreview.cableCost)}
+        />
+        <MetricItem
+          icon={<Radio size={18} />}
+          label="Pole cost"
+          value={formatCurrency(routePreview.polesCost)}
+        />
+        <MetricItem
+          icon={<Activity size={18} />}
+          label="Total estimate"
+          value={formatCurrency(routePreview.totalEstimatedCost)}
+        />
+        <MetricItem
+          icon={<MapPin size={18} />}
+          label="Route points"
+          value={String(routePreview.routeGeometry.length)}
+        />
+      </section>
+    );
+  }
 
   return (
     <section className="metrics-grid" aria-label="Network metrics">
@@ -73,4 +112,11 @@ function formatDistance(distance: number): string {
   }
 
   return `${distance.toFixed(0)} m`;
+}
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
 }

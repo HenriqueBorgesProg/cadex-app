@@ -70,25 +70,37 @@ export class NetworkService {
       latitude: client.latitude,
       longitude: client.longitude,
     };
-    let nearestPole = poles[0];
-    let shortestRoute = await this.roadRouteService.calculateRoute(
-      clientCoordinate,
-      {
-        latitude: nearestPole.latitude,
-        longitude: nearestPole.longitude,
-      }
-    );
+    let nearestPole: Point | null = null;
+    let shortestRoute: {
+      distance: number;
+      geometry: RouteCoordinate[];
+    } | null = null;
 
-    for (const pole of poles.slice(1)) {
-      const route = await this.roadRouteService.calculateRoute(clientCoordinate, {
+    for (const pole of poles) {
+      const route = await this.roadRouteService.calculateRoadRoute(clientCoordinate, {
         latitude: pole.latitude,
         longitude: pole.longitude,
       });
 
-      if (route.distance < shortestRoute.distance) {
-        shortestRoute = route;
+      if (!route) {
+        continue;
+      }
+
+      if (!shortestRoute || route.distance < shortestRoute.distance) {
+        shortestRoute = {
+          distance: route.distance,
+          geometry: route.geometry,
+        };
         nearestPole = pole;
       }
+    }
+
+    if (!nearestPole || !shortestRoute) {
+      throw new AppError(
+        `Unable to calculate road route for client ${client.id}`,
+        502,
+        "ROAD_ROUTE_UNAVAILABLE"
+      );
     }
 
     return {

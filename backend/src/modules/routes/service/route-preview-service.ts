@@ -22,6 +22,8 @@ interface SuggestedPole {
 interface RoutePreviewOutput {
   origin: Point;
   destination: Point;
+  routeOrigin: RouteCoordinate;
+  routeDestination: RouteCoordinate;
   routeGeometry: RouteCoordinate[];
   distanceMeters: number;
   durationSeconds?: number;
@@ -63,10 +65,19 @@ export class RoutePreviewService {
       );
     }
 
-    const route = await this.roadRouteService.calculateRoute(
+    const route = await this.roadRouteService.calculateRoadRoute(
       this.toCoordinate(origin),
       this.toCoordinate(destination)
     );
+
+    if (!route) {
+      throw new AppError(
+        "Unable to calculate route using real roads",
+        502,
+        "ROAD_ROUTE_UNAVAILABLE"
+      );
+    }
+
     const suggestedPoles = this.generateSuggestedPoles(
       route.geometry,
       input.poleSpacingMeters
@@ -77,6 +88,8 @@ export class RoutePreviewService {
     return {
       origin,
       destination,
+      routeOrigin: route.routeOrigin,
+      routeDestination: route.routeDestination,
       routeGeometry: route.geometry,
       distanceMeters: route.distance,
       durationSeconds: route.duration,
