@@ -14,10 +14,12 @@ import type {
 } from "../types/domain";
 
 const routePreviewDefaults = {
-  poleSpacingMeters: 100,
-  cableCostPerMeter: 5,
-  poleUnitCost: 250,
+  poleSpacingMeters: "100",
+  cableCostPerMeter: "5",
+  poleUnitCost: "250",
 };
+
+export type RoutePreviewParameters = typeof routePreviewDefaults;
 
 export function useNetworkOptimizer() {
   const [points, setPoints] = useState<Point[]>([]);
@@ -39,6 +41,8 @@ export function useNetworkOptimizer() {
   const [routePreview, setRoutePreview] = useState<RoutePreviewResult | null>(
     null
   );
+  const [routePreviewParameters, setRoutePreviewParameters] =
+    useState<RoutePreviewParameters>(routePreviewDefaults);
   const [isLoadingPoints, setIsLoadingPoints] = useState(false);
   const [isSavingPoint, setIsSavingPoint] = useState(false);
   const [isGeneratingNetwork, setIsGeneratingNetwork] = useState(false);
@@ -201,10 +205,19 @@ export function useNetworkOptimizer() {
     setErrorMessage(null);
 
     try {
+      const parsedParameters = parseRoutePreviewParameters(
+        routePreviewParameters
+      );
+
+      if (!parsedParameters) {
+        setErrorMessage("Route simulation parameters must be greater than zero.");
+        return;
+      }
+
       const preview = await previewRoute({
         originPointId: routeOriginPointId,
         destinationPointId: routeDestinationPointId,
-        ...routePreviewDefaults,
+        ...parsedParameters,
       });
 
       setRoutePreview(preview);
@@ -214,7 +227,18 @@ export function useNetworkOptimizer() {
     } finally {
       setIsGeneratingRoutePreview(false);
     }
-  }, [routeDestinationPointId, routeOriginPointId]);
+  }, [routeDestinationPointId, routeOriginPointId, routePreviewParameters]);
+
+  const updateRoutePreviewParameter = useCallback(
+    (parameter: keyof RoutePreviewParameters, value: string) => {
+      setRoutePreviewParameters((currentParameters) => ({
+        ...currentParameters,
+        [parameter]: value,
+      }));
+      setRoutePreview(null);
+    },
+    []
+  );
 
   const runNetworkGeneration = useCallback(async () => {
     setIsGeneratingNetwork(true);
@@ -249,6 +273,7 @@ export function useNetworkOptimizer() {
     routeOriginPointId,
     routeDestinationPointId,
     routePreview,
+    routePreviewParameters,
     errorMessage,
     isLoadingPoints,
     isSavingPoint,
@@ -262,8 +287,38 @@ export function useNetworkOptimizer() {
     startRoutePlanning,
     cancelRoutePlanning,
     generateRoutePreview,
+    updateRoutePreviewParameter,
     runNetworkGeneration,
     clearNetwork,
     refreshPoints: loadPoints,
+  };
+}
+
+function parseRoutePreviewParameters(
+  parameters: RoutePreviewParameters
+): {
+  poleSpacingMeters: number;
+  cableCostPerMeter: number;
+  poleUnitCost: number;
+} | null {
+  const poleSpacingMeters = Number(parameters.poleSpacingMeters);
+  const cableCostPerMeter = Number(parameters.cableCostPerMeter);
+  const poleUnitCost = Number(parameters.poleUnitCost);
+
+  if (
+    !Number.isFinite(poleSpacingMeters) ||
+    !Number.isFinite(cableCostPerMeter) ||
+    !Number.isFinite(poleUnitCost) ||
+    poleSpacingMeters <= 0 ||
+    cableCostPerMeter <= 0 ||
+    poleUnitCost <= 0
+  ) {
+    return null;
+  }
+
+  return {
+    poleSpacingMeters,
+    cableCostPerMeter,
+    poleUnitCost,
   };
 }

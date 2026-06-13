@@ -15,6 +15,7 @@ import type {
   PointType,
   RoutePreviewResult,
 } from "../types/domain";
+import type { RoutePreviewParameters } from "../hooks/useNetworkOptimizer";
 
 interface ControlPanelProps {
   selectedType: PointType;
@@ -27,7 +28,12 @@ interface ControlPanelProps {
   routeOriginPoint: Point | null;
   routeDestinationPoint: Point | null;
   routePreview: RoutePreviewResult | null;
+  routePreviewParameters: RoutePreviewParameters;
   onTypeChange: (type: PointType) => void;
+  onRoutePreviewParameterChange: (
+    parameter: keyof RoutePreviewParameters,
+    value: string
+  ) => void;
   onSavePoint: () => void;
   onCancelPoint: () => void;
   onGenerateNetwork: () => void;
@@ -48,7 +54,9 @@ export function ControlPanel({
   routeOriginPoint,
   routeDestinationPoint,
   routePreview,
+  routePreviewParameters,
   onTypeChange,
+  onRoutePreviewParameterChange,
   onSavePoint,
   onCancelPoint,
   onGenerateNetwork,
@@ -181,6 +189,35 @@ export function ControlPanel({
             <span className="helper-text">
               Click two existing points on the map, then generate the simulation.
             </span>
+            <div className="route-parameter-grid">
+              <RouteParameterField
+                label="Pole spacing (m)"
+                min={1}
+                step={10}
+                value={routePreviewParameters.poleSpacingMeters}
+                onChange={(value) =>
+                  onRoutePreviewParameterChange("poleSpacingMeters", value)
+                }
+              />
+              <RouteParameterField
+                label="Cable cost / m"
+                min={0.01}
+                step={0.5}
+                value={routePreviewParameters.cableCostPerMeter}
+                onChange={(value) =>
+                  onRoutePreviewParameterChange("cableCostPerMeter", value)
+                }
+              />
+              <RouteParameterField
+                label="Pole unit cost"
+                min={0.01}
+                step={10}
+                value={routePreviewParameters.poleUnitCost}
+                onChange={(value) =>
+                  onRoutePreviewParameterChange("poleUnitCost", value)
+                }
+              />
+            </div>
             <button
               className="primary-button full-width"
               type="button"
@@ -212,6 +249,33 @@ export function ControlPanel({
         )}
       </div>
     </section>
+  );
+}
+
+function RouteParameterField({
+  label,
+  min,
+  step,
+  value,
+  onChange,
+}: {
+  label: string;
+  min: number;
+  step: number;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="route-parameter-field">
+      <span>{label}</span>
+      <input
+        type="number"
+        min={min}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(event.currentTarget.value)}
+      />
+    </label>
   );
 }
 

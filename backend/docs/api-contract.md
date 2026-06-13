@@ -1,4 +1,4 @@
-# Cadex Network Optimizer API Contract
+# Cadex FTTH Planner API Contract
 
 ## Base URL
 
@@ -179,11 +179,11 @@ Status: `200 OK`
 
 ## POST /network/generate
 
-Generates a network in real time by connecting each client to the nearest pole.
+Generates a network in real time by connecting each client to the nearest pole using real road routes.
 
 Request body: none.
 
-The endpoint uses the points already stored in the database. Connections are not persisted.
+The endpoint uses the points already stored in the database. Connections are not persisted. Points outside the road network are snapped to the nearest routable road coordinate before calculating routes.
 
 Success response:
 
@@ -218,9 +218,21 @@ Fields:
 connections: generated client-to-pole connections
 clientId: UUID of the client point
 poleId: UUID of the nearest pole point
-distance: route distance in meters when available, otherwise geographic fallback distance
+distance: road route distance in meters
 geometry: route coordinates returned by the backend for map rendering
 totalDistance: sum of all connection distances in meters
+```
+
+Status: `502 Bad Gateway`
+
+```json
+{
+  "error": {
+    "message": "Unable to calculate road route for client 4446c36e-982d-432e-aa80-dd36b3af644c",
+    "code": "ROAD_ROUTE_UNAVAILABLE",
+    "statusCode": 502
+  }
+}
 ```
 
 Empty clients response:
@@ -254,6 +266,8 @@ Status: `400 Bad Request`
 - `POST /network/generate` does not need a request body.
 - The network result is calculated from current database data.
 - Network connections are not stored in the database.
+- Network routes are calculated using road geometry.
+- Points may be snapped to the nearest routable road coordinate before routing.
 - A point must be created as either `client` or `pole`.
 - Latitude and longitude must be sent as JSON numbers, not strings.
 
@@ -273,7 +287,7 @@ Request body:
 }
 ```
 
-The preview uses real road route geometry when available. Suggested poles are generated along the returned route geometry and are not persisted in the database.
+The preview uses real road route geometry. Origin and destination coordinates are snapped to the nearest routable road coordinate before routing. Suggested poles are generated along the returned route geometry and are not persisted in the database.
 
 Success response:
 
@@ -296,6 +310,14 @@ Status: `200 OK`
     "longitude": -46.6588,
     "createdAt": "2026-05-09T17:10:54.779Z",
     "updatedAt": "2026-05-09T17:10:54.779Z"
+  },
+  "routeOrigin": {
+    "latitude": -23.5504,
+    "longitude": -46.6331
+  },
+  "routeDestination": {
+    "latitude": -23.5594,
+    "longitude": -46.6586
   },
   "routeGeometry": [
     {
@@ -329,6 +351,8 @@ Fields:
 ```txt
 origin: point used as route start
 destination: point used as route end
+routeOrigin: nearest routable road coordinate used as route start
+routeDestination: nearest routable road coordinate used as route end
 routeGeometry: route coordinates using latitude and longitude fields
 distanceMeters: route distance in meters
 durationSeconds: estimated route duration in seconds when available
@@ -349,6 +373,18 @@ Status: `400 Bad Request`
     "message": "Request body is required",
     "code": "REQUEST_BODY_REQUIRED",
     "statusCode": 400
+  }
+}
+```
+
+Status: `502 Bad Gateway`
+
+```json
+{
+  "error": {
+    "message": "Unable to calculate route using real roads",
+    "code": "ROAD_ROUTE_UNAVAILABLE",
+    "statusCode": 502
   }
 }
 ```

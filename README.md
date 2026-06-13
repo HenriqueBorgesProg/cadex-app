@@ -1,8 +1,8 @@
-# Cadex Network Optimizer
+# Cadex FTTH Planner
 
-O Cadex Network Optimizer é um MVP full-stack para visualizar e gerar uma rede geográfica simples entre clientes e polos.
+O Cadex FTTH Planner é um MVP full-stack para planejamento de implantação de redes FTTH, inspirado no contexto operacional da Cadex Goiânia.
 
-O sistema permite que os usuários criem pontos geográficos em um mapa, os classifiquem como `client` ou `pole`, persistam esses dados através do backend e gerem uma rede onde cada cliente é conectado ao polo mais próximo.
+O sistema permite criar pontos geográficos no mapa, classificá-los como `client` ou `pole`, gerar conexões por ruas reais e simular uma rota planejada entre dois pontos existentes. A simulação sugere postes ao longo do trajeto, calcula distância total e estima o custo financeiro de implantação.
 
 <div align="center">
 
@@ -23,9 +23,10 @@ O objetivo deste projeto é demonstrar:
 - Separação entre lógica de negócio e camada HTTP
 - Visualização geoespacial com Leaflet
 - Integração frontend/backend
-- Um fluxo prático semelhante a um produto real
+- Planejamento de implantação FTTH baseado em rotas reais
+- Sugestão de infraestrutura e estimativa financeira
 
-O frontend não calcula a rede. Ele apenas envia dados, consome respostas da API e renderiza o resultado. O backend é responsável pelas regras de domínio e pelo cálculo de distância.
+O frontend não calcula rotas, custos ou regras de rede. Ele apenas envia dados, consome respostas da API e renderiza o resultado. O backend é responsável pelas regras de domínio, cálculo de rotas, sugestão de postes e estimativa financeira.
 
 ## Stack Tecnológica
 
@@ -57,6 +58,7 @@ cadex-app/
       modules/
         points/
         network/
+        routes/
       shared/
         database/
         errors/
@@ -88,19 +90,37 @@ pole
 
 Um `client` representa a localização de um cliente.
 
-Um `pole` representa um ponto de infraestrutura ao qual clientes podem se conectar.
+Um `pole` representa um ponto de infraestrutura ao qual clientes podem se conectar ou que pode ser usado como origem/destino de planejamento.
+
+O sistema possui dois fluxos principais.
 
 O fluxo de geração da rede é:
 
 ```txt
 1. Carregar todos os pontos do banco de dados
 2. Separar clientes e polos
-3. Para cada cliente, encontrar o polo mais próximo
-4. Retornar uma lista de conexões
+3. Para cada cliente, encontrar o polo com menor rota real por ruas
+4. Retornar uma lista de conexões com geometria de rota
 5. Retornar a distância total da rede
 ```
 
 As conexões são geradas em tempo real e não são armazenadas no banco de dados.
+
+O fluxo de planejamento de rota é:
+
+```txt
+1. Usuário ativa o modo Plan route
+2. Usuário seleciona ponto de origem
+3. Usuário seleciona ponto de destino
+4. Backend ajusta origem e destino para a rua roteável mais próxima
+5. Backend calcula a rota real usando OSRM
+6. Backend sugere postes ao longo da geometria
+7. Backend calcula custos de cabo, postes e custo total
+8. Frontend renderiza rota, postes sugeridos e métricas
+```
+
+Os postes sugeridos são apenas simulação e não são persistidos automaticamente.
+O espaçamento entre postes, custo por metro de cabo e custo unitário por poste podem ser ajustados na interface antes de gerar a simulação.
 
 ## Arquitetura do Backend
 
@@ -350,7 +370,7 @@ Response:
 
 ### POST /network/generate
 
-Gera a rede a partir dos pontos armazenados no banco de dados.
+Gera a rede a partir dos pontos armazenados no banco de dados, usando rotas reais por ruas.
 
 Request body:
 
@@ -366,14 +386,89 @@ Response:
     {
       "clientId": "4446c36e-982d-432e-aa80-dd36b3af644c",
       "poleId": "e14b8e36-f533-425f-a17d-dfbdff995889",
-      "distance": 224642.13
+      "distance": 224642.13,
+      "geometry": [
+        {
+          "latitude": -16.6869,
+          "longitude": -49.2648
+        }
+      ]
     }
   ],
   "totalDistance": 224642.13
 }
 ```
 
-As distâncias são retornadas em metros.
+As distâncias são retornadas em metros. Pontos fora da rua são ajustados para a rua roteável mais próxima antes do cálculo.
+
+### POST /routes/preview
+
+Gera uma simulação de planejamento entre dois pontos existentes, sem persistir postes sugeridos.
+
+Request:
+
+```json
+{
+  "originPointId": "b776c49b-5703-452a-ae0a-700f13a05502",
+  "destinationPointId": "4446c36e-982d-432e-aa80-dd36b3af644c",
+  "poleSpacingMeters": 100,
+  "cableCostPerMeter": 5,
+  "poleUnitCost": 250
+}
+```
+
+Response:
+
+```json
+{
+  "origin": {
+    "id": "b776c49b-5703-452a-ae0a-700f13a05502",
+    "type": "pole",
+    "latitude": -16.6869,
+    "longitude": -49.2648,
+    "createdAt": "2026-05-09T17:10:10.686Z",
+    "updatedAt": "2026-05-09T17:10:10.686Z"
+  },
+  "destination": {
+    "id": "4446c36e-982d-432e-aa80-dd36b3af644c",
+    "type": "client",
+    "latitude": -16.6773,
+    "longitude": -49.2941,
+    "createdAt": "2026-05-09T17:10:54.779Z",
+    "updatedAt": "2026-05-09T17:10:54.779Z"
+  },
+  "routeOrigin": {
+    "latitude": -16.6868,
+    "longitude": -49.2647
+  },
+  "routeDestination": {
+    "latitude": -16.6771,
+    "longitude": -49.2940
+  },
+  "routeGeometry": [
+    {
+      "latitude": -16.6868,
+      "longitude": -49.2647
+    }
+  ],
+  "distanceMeters": 3500,
+  "durationSeconds": 420,
+  "suggestedPoles": [
+    {
+      "sequence": 1,
+      "latitude": -16.6841,
+      "longitude": -49.2701,
+      "distanceFromOriginMeters": 100
+    }
+  ],
+  "poleCount": 35,
+  "cableCost": 17500,
+  "polesCost": 8750,
+  "totalEstimatedCost": 26250
+}
+```
+
+`routeOrigin` e `routeDestination` são as coordenadas roteáveis usadas no cálculo, após ajuste para a rua mais próxima.
 
 ## Formato de Erro
 
@@ -408,9 +503,10 @@ Erros inesperados seguem esta estrutura:
 3. Clicar no mapa
 4. Salvar o ponto selecionado
 5. Repetir até existirem clientes e polos
-6. Clicar em `Generate network`
-7. Visualizar conexões no mapa
-8. Ler a distância total e métricas de conexão
+6. Clicar em `Generate network` para visualizar conexões por ruas reais
+7. Ou clicar em `Plan route` para selecionar origem e destino
+8. Clicar em `Generate simulation`
+9. Visualizar rota, postes sugeridos e estimativa financeira
 
 ## Funcionalidades do Frontend
 
@@ -420,6 +516,12 @@ Erros inesperados seguem esta estrutura:
 - Lista de pontos
 - Botão de geração da rede
 - Renderização de conexões com polylines
+- Modo de planejamento de rota
+- Seleção de origem e destino existentes
+- Renderização de rota real simulada
+- Renderização de postes sugeridos
+- Resumo de custo estimado
+- Configuração de espaçamento entre postes e custos da simulação
 - Métrica de distância total
 - Quantidade de conexões
 - Estados de carregamento
@@ -435,6 +537,12 @@ Erros inesperados seguem esta estrutura:
 - Utilitário de distância
 - Service de geração da rede
 - API da rede
+- Service de preview de rota planejada
+- API de preview de rota
+- Integração com OSRM para rotas reais
+- Ajuste de pontos para rua roteável mais próxima
+- Geração de postes sugeridos não persistidos
+- Estimativa de custo de cabo e postes
 - Métricas da rede
 - Tratamento de casos extremos
 - Documentação do contrato da API
@@ -460,6 +568,7 @@ Depois teste manualmente:
 POST /points
 GET /points
 POST /network/generate
+POST /routes/preview
 ```
 
 No frontend, teste:
@@ -470,6 +579,11 @@ Create pole
 Generate network
 View connection line
 View total distance
+Plan route
+Select origin and destination
+Generate simulation
+View suggested poles
+View estimated cost
 Refresh points
 ```
 
@@ -552,24 +666,21 @@ O MVP inclui:
 - Frontend funcional
 - Mapa interativo
 - Persistência de pontos
-- Geração de rede
-- Renderização visual das conexões
+- Geração de rede usando rotas reais
+- Planejamento de rota entre origem e destino
+- Renderização visual das conexões e simulações
+- Sugestão automática de postes
+- Estimativa financeira de implantação
 - Painel de métricas
 - Documentação da API
 
-O projeto está pronto para demonstração como um MVP full-stack.
+O projeto está pronto para demonstração como um MVP full-stack de planejamento FTTH.
 
 
 ## Melhorias Futuras
 
-O projeto foi desenvolvido como um MVP focado em simplicidade arquitetural, validação de fluxo e demonstração técnica full-stack. Atualmente, a geração da rede utiliza distância geodésica entre pontos, sem considerar ruas ou rotas reais.
-
 As próximas evoluções planejadas incluem:
 
-- Integração com engines de roteamento reais
-- Cálculo de rotas baseado em ruas
-- Integração com OpenStreetMap
-- Utilização de APIs como OpenRouteService ou OSRM
 - Algoritmos de menor caminho
 - Otimização de rede
 - Clusterização geográfica
@@ -577,6 +688,7 @@ As próximas evoluções planejadas incluem:
 - Métricas avançadas de conexão
 - Suporte para múltiplos polos prioritários
 - Persistência de redes geradas
+- Aprovação e persistência seletiva de postes sugeridos
 - Atualização em tempo real das conexões
 - Dashboard analítico
 - Autenticação de usuários

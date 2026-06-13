@@ -28,7 +28,9 @@ export function NetworkOptimizerPage() {
           routeOriginPoint={optimizer.routeOriginPoint}
           routeDestinationPoint={optimizer.routeDestinationPoint}
           routePreview={optimizer.routePreview}
+          routePreviewParameters={optimizer.routePreviewParameters}
           onTypeChange={optimizer.setSelectedType}
+          onRoutePreviewParameterChange={optimizer.updateRoutePreviewParameter}
           onSavePoint={optimizer.savePendingPoint}
           onCancelPoint={optimizer.cancelPendingPoint}
           onGenerateNetwork={optimizer.runNetworkGeneration}

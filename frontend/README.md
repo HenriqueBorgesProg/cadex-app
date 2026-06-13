@@ -1,6 +1,6 @@
-# Cadex Network Optimizer Frontend
+# Cadex FTTH Planner Frontend
 
-React + Vite frontend for the Cadex Network Optimizer MVP.
+React + Vite frontend for the Cadex FTTH Planner MVP.
 
 ## Requirements
 
@@ -28,9 +28,12 @@ npm run lint
 - Interactive Leaflet map
 - Point creation by map click
 - Client and pole visualization
-- Network generation through the backend
-- Connection rendering with polylines
-- Network metrics panel
+- Network generation through the backend using road routes
+- Route planning between existing points
+- Suggested pole rendering
+- Financial estimate metrics
+- Connection and simulation rendering with polylines
+- Network and route metrics panel
 - Loading and error states
 
 ## Architecture
@@ -45,4 +48,4 @@ src/
   types/       Shared frontend types
 ```
 
-The frontend does not calculate network rules. It sends points to the backend, receives generated connections, and renders the result.
+The frontend does not calculate network rules, routes, pole suggestions, or costs. It sends points to the backend, receives generated connections or route previews, and renders the result.

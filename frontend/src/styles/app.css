@@ -251,6 +251,38 @@
   gap: 6px;
 }
 
+.route-parameter-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.route-parameter-field {
+  display: grid;
+  gap: 5px;
+}
+
+.route-parameter-field span {
+  color: #697367;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.route-parameter-field input {
+  width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid #dce2d6;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #17211b;
+}
+
+.route-parameter-field input:focus {
+  border-color: #2f6f4e;
+  outline: 2px solid rgba(47, 111, 78, 0.16);
+}
+
 .helper-text {
   color: #697367;
   font-size: 13px;
