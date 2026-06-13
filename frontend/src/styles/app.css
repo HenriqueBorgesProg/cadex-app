@@ -101,6 +101,7 @@
 
 .segmented-control button,
 .primary-button,
+.secondary-button,
 .icon-button {
   display: inline-flex;
   align-items: center;
@@ -169,7 +170,22 @@
   background: #265c41;
 }
 
+.secondary-button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #cfd8ca;
+  background: #ffffff;
+  color: #2f6f4e;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: #eef3e9;
+}
+
 .primary-button:disabled,
+.secondary-button:disabled,
 .icon-button:disabled {
   cursor: not-allowed;
   opacity: 0.64;
@@ -189,6 +205,55 @@
 
 .icon-button:hover:not(:disabled) {
   background: #eef3e9;
+}
+
+.planning-box {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e2e7dc;
+}
+
+.panel-heading.compact {
+  margin-bottom: 0;
+}
+
+.route-selection-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.route-point-summary,
+.route-preview-summary {
+  padding: 10px;
+  border: 1px solid #e2e7dc;
+  border-radius: 8px;
+  background: #f9fbf5;
+}
+
+.route-point-summary p,
+.route-preview-summary p {
+  margin: 0;
+  color: #697367;
+  font-size: 12px;
+}
+
+.route-point-summary strong,
+.route-preview-summary strong {
+  color: #17211b;
+  font-size: 13px;
+}
+
+.route-preview-summary {
+  display: grid;
+  gap: 6px;
+}
+
+.helper-text {
+  color: #697367;
+  font-size: 13px;
 }
 
 .metrics-grid {

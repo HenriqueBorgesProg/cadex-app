@@ -22,11 +22,19 @@ export function NetworkOptimizerPage() {
           pendingPoint={optimizer.pendingPoint}
           isSavingPoint={optimizer.isSavingPoint}
           isGeneratingNetwork={optimizer.isGeneratingNetwork}
+          isGeneratingRoutePreview={optimizer.isGeneratingRoutePreview}
           isLoadingPoints={optimizer.isLoadingPoints}
+          isRoutePlanningMode={optimizer.isRoutePlanningMode}
+          routeOriginPoint={optimizer.routeOriginPoint}
+          routeDestinationPoint={optimizer.routeDestinationPoint}
+          routePreview={optimizer.routePreview}
           onTypeChange={optimizer.setSelectedType}
           onSavePoint={optimizer.savePendingPoint}
           onCancelPoint={optimizer.cancelPendingPoint}
           onGenerateNetwork={optimizer.runNetworkGeneration}
+          onStartRoutePlanning={optimizer.startRoutePlanning}
+          onCancelRoutePlanning={optimizer.cancelRoutePlanning}
+          onGenerateRoutePreview={optimizer.generateRoutePreview}
           onRefreshPoints={optimizer.refreshPoints}
         />
 
@@ -46,15 +54,23 @@ export function NetworkOptimizerPage() {
           isLoading={
             optimizer.isLoadingPoints ||
             optimizer.isSavingPoint ||
-            optimizer.isGeneratingNetwork
+            optimizer.isGeneratingNetwork ||
+            optimizer.isGeneratingRoutePreview
           }
-          hasNetwork={optimizer.network.connections.length > 0}
+          hasNetwork={
+            optimizer.network.connections.length > 0 || Boolean(optimizer.routePreview)
+          }
         />
         <MapView
           points={optimizer.points}
           pendingPoint={optimizer.pendingPoint}
           connections={optimizer.connectionSegments}
+          selectedRoutePointIds={{
+            originPointId: optimizer.routeOriginPointId,
+            destinationPointId: optimizer.routeDestinationPointId,
+          }}
           onMapClick={optimizer.selectPendingPoint}
+          onPointClick={optimizer.selectRoutePoint}
         />
       </section>
     </main>

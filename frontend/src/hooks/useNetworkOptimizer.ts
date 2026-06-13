@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getApiErrorMessage } from "../services/api";
 import { generateNetwork } from "../services/network-service";
 import { createPoint, getPoints } from "../services/points-service";
+import { previewRoute } from "../services/routes-service";
 import { POINT_TYPES } from "../types/domain";
 import type {
   ConnectionSegment,
@@ -9,7 +10,14 @@ import type {
   PendingPoint,
   Point,
   PointType,
+  RoutePreviewResult,
 } from "../types/domain";
+
+const routePreviewDefaults = {
+  poleSpacingMeters: 100,
+  cableCostPerMeter: 5,
+  poleUnitCost: 250,
+};
 
 export function useNetworkOptimizer() {
   const [points, setPoints] = useState<Point[]>([]);
@@ -21,9 +29,20 @@ export function useNetworkOptimizer() {
     POINT_TYPES.Client
   );
   const [pendingPoint, setPendingPoint] = useState<PendingPoint | null>(null);
+  const [isRoutePlanningMode, setIsRoutePlanningMode] = useState(false);
+  const [routeOriginPointId, setRouteOriginPointId] = useState<string | null>(
+    null
+  );
+  const [routeDestinationPointId, setRouteDestinationPointId] = useState<
+    string | null
+  >(null);
+  const [routePreview, setRoutePreview] = useState<RoutePreviewResult | null>(
+    null
+  );
   const [isLoadingPoints, setIsLoadingPoints] = useState(false);
   const [isSavingPoint, setIsSavingPoint] = useState(false);
   const [isGeneratingNetwork, setIsGeneratingNetwork] = useState(false);
+  const [isGeneratingRoutePreview, setIsGeneratingRoutePreview] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const hasLoadedInitialPoints = useRef(false);
 
@@ -83,10 +102,23 @@ export function useNetworkOptimizer() {
     });
   }, [network.connections, points]);
 
+  const routeOriginPoint = useMemo(() => {
+    return points.find((point) => point.id === routeOriginPointId) ?? null;
+  }, [points, routeOriginPointId]);
+
+  const routeDestinationPoint = useMemo(() => {
+    return points.find((point) => point.id === routeDestinationPointId) ?? null;
+  }, [points, routeDestinationPointId]);
+
   const selectPendingPoint = useCallback((point: PendingPoint) => {
+    if (isRoutePlanningMode) {
+      setErrorMessage("Click an existing point to plan a route.");
+      return;
+    }
+
     setPendingPoint(point);
     setErrorMessage(null);
-  }, []);
+  }, [isRoutePlanningMode]);
 
   const cancelPendingPoint = useCallback(() => {
     setPendingPoint(null);
@@ -110,12 +142,79 @@ export function useNetworkOptimizer() {
       setPoints((currentPoints) => [...currentPoints, savedPoint]);
       setPendingPoint(null);
       setNetwork({ connections: [], totalDistance: 0 });
+      setRoutePreview(null);
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error));
     } finally {
       setIsSavingPoint(false);
     }
   }, [pendingPoint, selectedType]);
+
+  const startRoutePlanning = useCallback(() => {
+    setIsRoutePlanningMode(true);
+    setPendingPoint(null);
+    setRouteOriginPointId(null);
+    setRouteDestinationPointId(null);
+    setRoutePreview(null);
+    setErrorMessage(null);
+  }, []);
+
+  const cancelRoutePlanning = useCallback(() => {
+    setIsRoutePlanningMode(false);
+    setRouteOriginPointId(null);
+    setRouteDestinationPointId(null);
+    setRoutePreview(null);
+    setErrorMessage(null);
+  }, []);
+
+  const selectRoutePoint = useCallback(
+    (point: Point) => {
+      if (!isRoutePlanningMode) {
+        return;
+      }
+
+      setRoutePreview(null);
+      setErrorMessage(null);
+
+      if (!routeOriginPointId) {
+        setRouteOriginPointId(point.id);
+        return;
+      }
+
+      if (point.id === routeOriginPointId) {
+        setErrorMessage("Destination must be different from origin.");
+        return;
+      }
+
+      setRouteDestinationPointId(point.id);
+    },
+    [isRoutePlanningMode, routeOriginPointId]
+  );
+
+  const generateRoutePreview = useCallback(async () => {
+    if (!routeOriginPointId || !routeDestinationPointId) {
+      setErrorMessage("Select origin and destination points first.");
+      return;
+    }
+
+    setIsGeneratingRoutePreview(true);
+    setErrorMessage(null);
+
+    try {
+      const preview = await previewRoute({
+        originPointId: routeOriginPointId,
+        destinationPointId: routeDestinationPointId,
+        ...routePreviewDefaults,
+      });
+
+      setRoutePreview(preview);
+    } catch (error) {
+      setRoutePreview(null);
+      setErrorMessage(getApiErrorMessage(error));
+    } finally {
+      setIsGeneratingRoutePreview(false);
+    }
+  }, [routeDestinationPointId, routeOriginPointId]);
 
   const runNetworkGeneration = useCallback(async () => {
     setIsGeneratingNetwork(true);
@@ -144,14 +243,25 @@ export function useNetworkOptimizer() {
     pendingPoint,
     network,
     connectionSegments,
+    isRoutePlanningMode,
+    routeOriginPoint,
+    routeDestinationPoint,
+    routeOriginPointId,
+    routeDestinationPointId,
+    routePreview,
     errorMessage,
     isLoadingPoints,
     isSavingPoint,
     isGeneratingNetwork,
+    isGeneratingRoutePreview,
     setSelectedType,
     selectPendingPoint,
+    selectRoutePoint,
     cancelPendingPoint,
     savePendingPoint,
+    startRoutePlanning,
+    cancelRoutePlanning,
+    generateRoutePreview,
     runNetworkGeneration,
     clearNetwork,
     refreshPoints: loadPoints,

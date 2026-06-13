@@ -37,6 +37,34 @@ export interface NetworkResult {
   totalDistance: number;
 }
 
+export interface RoutePreviewInput {
+  originPointId: string;
+  destinationPointId: string;
+  poleSpacingMeters: number;
+  cableCostPerMeter: number;
+  poleUnitCost: number;
+}
+
+export interface SuggestedPole {
+  sequence: number;
+  latitude: number;
+  longitude: number;
+  distanceFromOriginMeters: number;
+}
+
+export interface RoutePreviewResult {
+  origin: Point;
+  destination: Point;
+  routeGeometry: RouteCoordinate[];
+  distanceMeters: number;
+  durationSeconds?: number;
+  suggestedPoles: SuggestedPole[];
+  poleCount: number;
+  cableCost: number;
+  polesCost: number;
+  totalEstimatedCost: number;
+}
+
 export interface ConnectionSegment extends NetworkConnection {
   client: Point;
   pole: Point;
