@@ -65,6 +65,7 @@ export function NetworkOptimizerPage() {
           points={optimizer.points}
           pendingPoint={optimizer.pendingPoint}
           connections={optimizer.connectionSegments}
+          routePreview={optimizer.routePreview}
           selectedRoutePointIds={{
             originPointId: optimizer.routeOriginPointId,
             destinationPointId: optimizer.routeDestinationPointId,
