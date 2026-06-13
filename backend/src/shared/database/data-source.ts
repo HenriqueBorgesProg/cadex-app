@@ -1,3 +1,4 @@
+import "dotenv/config";
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { Point } from "../../modules/points/entity/Point";
