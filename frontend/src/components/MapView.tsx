@@ -234,8 +234,21 @@ function MapBounds({
       return;
     }
 
+    if (coordinates.length === 1) {
+      map.flyTo(coordinates[0], Math.max(map.getZoom(), 15), {
+        animate: true,
+        duration: 0.45,
+      });
+      return;
+    }
+
     const bounds = coordinates as LatLngBoundsExpression;
-    map.fitBounds(bounds, { padding: [42, 42], maxZoom: 13 });
+    map.fitBounds(bounds, {
+      animate: true,
+      duration: 0.45,
+      maxZoom: 16,
+      padding: [28, 28],
+    });
   }, [map, pendingPoint, points, routePreview]);
 
   return null;
